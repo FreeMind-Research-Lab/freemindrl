@@ -29,12 +29,12 @@ def main() -> int:
         cliente.esperar_listo(600)
         print(f"listo ({time.monotonic() - start:.1f} s)")
         start = time.monotonic()
-        r = cliente.responder("¿Cuál es la capital de Colombia?", modelo="O.1-T", pensamiento=False)
+        r = cliente.responder("¿Cuál es la capital de Colombia?", modelo="O.1-T", pensamiento="apagado")
         print(f"completa ({time.monotonic() - start:.1f} s): {r.texto!r}")
         print(f"  motivo {r.motivo}, {r.fin.get('tokens_generados')} tokens, commit {r.fin.get('commit', '')[:12]}, "
               f"pesos {r.fin.get('pesos_sha256', '')[:16]}")
         print("en vivo: ", end="", flush=True)
-        for event in cliente.responder("Di hola en una frase.", modelo="O.1-T", pensamiento=False, en_vivo=True):
+        for event in cliente.responder("Di hola en una frase.", modelo="O.1-T", pensamiento="apagado", en_vivo=True):
             if event.tipo == "texto":
                 print(event.texto, end="", flush=True)
         print()

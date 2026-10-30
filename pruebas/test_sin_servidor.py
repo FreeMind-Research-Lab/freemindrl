@@ -60,14 +60,10 @@ class SinServidor(unittest.TestCase):
 
     def test_pensamiento_obligatorio(self):
         cliente = OrionOne(llave="x", url="http://127.0.0.1:9")
-        with self.assertRaises(TypeError):
-            cliente.responder("Hola", modelo="O.1-T")
-        with self.assertRaises(ValueError):
-            cliente.responder("Hola", modelo="O.1-T", pensamiento="no")
-        with self.assertRaises(ValueError):
-            cliente.responder("Hola", modelo="O.1-T", pensamiento=True)
-        with self.assertRaises(ValueError):
-            cliente.responder("Hola", modelo="O.1-T", pensamiento=False, presupuesto=8)
+        for kwargs in ({}, {"pensamiento": True}, {"pensamiento": 3}, {"pensamiento": "bajo", "presupuesto": 8},
+                       {"pensamiento": False, "presupuesto": 8}, {"presupuesto": -1}):
+            with self.assertRaises(ValueError, msg=str(kwargs)):
+                cliente.responder("Hola", modelo="O.1-T", **kwargs)
 
 
 if __name__ == "__main__":

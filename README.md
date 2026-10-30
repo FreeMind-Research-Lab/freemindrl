@@ -28,7 +28,7 @@ from freemindrl import OrionOne
 
 cliente = OrionOne(llave=os.environ["ORIONONE_LLAVE"], url=os.environ["ORIONONE_URL"])
 
-respuesta = cliente.responder("¿Cuál es la capital de Colombia?", modelo="O.1-T", pensamiento=False)
+respuesta = cliente.responder("¿Cuál es la capital de Colombia?", modelo="O.1-T", pensamiento="apagado")
 print(respuesta.texto)
 print(respuesta.motivo, respuesta.fin["tokens_generados"])
 ```
@@ -36,7 +36,7 @@ print(respuesta.motivo, respuesta.fin["tokens_generados"])
 En vivo, evento por evento:
 
 ```python
-for evento in cliente.responder("Cuéntame algo de Bogotá.", modelo="O.1-T", pensamiento=False, en_vivo=True):
+for evento in cliente.responder("Cuéntame algo de Bogotá.", modelo="O.1-T", pensamiento="apagado", en_vivo=True):
     if evento.tipo == "texto":
         print(evento.texto, end="", flush=True)
 ```
@@ -64,12 +64,21 @@ espera a que lo esté. Si no lo está a tiempo, `Desconexion`.
 | --- | --- |
 | `mensajes` | Un texto (un turno del usuario) o la lista de turnos `{"role", "content"}` |
 | `modelo` | El código de la familia. Hoy la API sirve `O.1-T` |
-| `pensamiento` | Obligatorio, `True` o `False`: el SDK no elige por ti |
-| `presupuesto` | Con `pensamiento=True`, obligatorio: a lo sumo cuántos tokens piensa el modelo; luego se cierra el pensamiento y se fuerza la respuesta. Menor que el tope, sin valor por defecto |
+| `pensamiento` | Cuánto piensa: `"apagado"`, `"bajo"`, `"medio"` o `"alto"` (`False` es apagado). Obligatorio, salvo que se pase `presupuesto`: el SDK no elige por ti |
+| `presupuesto` | En vez de un nivel, un techo exacto de tokens pensando; al llegar, se cierra el pensamiento y se fuerza la respuesta |
 | `estilo` | Un perfil de OrionOne Style, o el nombre de uno guardado |
 | `contrato` | Un JSON Schema: la respuesta lo cumple por construcción |
-| `semilla`, `tope`, `sesion` | Semilla del muestreo, máximo de tokens y conversación |
+| `semilla`, `tope`, `sesion` | Semilla del muestreo, máximo de tokens de la respuesta (el pensamiento va aparte) y conversación |
 | `en_vivo` | `True` para recibir los eventos a medida que llegan |
+
+### Niveles de pensamiento
+
+Cada nivel es un techo de tokens según el tamaño del modelo: "alto" quiere
+decir pensar mucho para ese modelo. Los techos de O.1-T son provisionales
+(bajo 256, medio 1.024, alto 4.096) y el evento `fin` dice cuál se usó, en
+`fin["pensamiento"]`. `"ultra"` (varias cadenas y voto) y `"automatico"`
+existen en el diseño pero el servidor los rechaza con `PedidoInvalido`: no
+están disponibles aún.
 
 ### Eventos
 

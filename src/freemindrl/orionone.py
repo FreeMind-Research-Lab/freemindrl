@@ -4,7 +4,7 @@
     from freemindrl import OrionOne
 
     cliente = OrionOne(llave=os.environ["ORIONONE_LLAVE"], url=os.environ["ORIONONE_URL"])
-    respuesta = cliente.responder("¿Cuál es la capital de Colombia?", modelo="O.1-T", pensamiento=False)
+    respuesta = cliente.responder("¿Cuál es la capital de Colombia?", modelo="O.1-T", pensamiento="apagado")
     print(respuesta.texto)
 
 La llave y la dirección se pasan siempre explícitas: el SDK no trae ninguna
@@ -57,6 +57,23 @@ class Respuesta:
     def motivo(self) -> str:
         """fin si el modelo terminó; tope si llegó al máximo de tokens."""
         return self.fin.get("motivo", "")
+
+
+def _pensamiento(nivel, presupuesto):
+    """Lo que va en el campo pensamiento del pedido."""
+    if presupuesto is not None:
+        if nivel not in (None, True):
+            raise ValueError("pasa un nivel de pensamiento o un presupuesto, no los dos")
+        if not isinstance(presupuesto, int) or isinstance(presupuesto, bool) or presupuesto < 0:
+            raise ValueError("el presupuesto es un entero >= 0")
+        return {"presupuesto": presupuesto}
+    if nivel is None or nivel is True:
+        raise ValueError('falta cuánto pensar: pensamiento="apagado", "bajo", "medio" o "alto", o presupuesto=N')
+    if nivel is False:
+        return "apagado"
+    if not isinstance(nivel, str):
+        raise ValueError("pensamiento es un nivel: apagado, bajo, medio o alto")
+    return nivel
 
 
 def _error(status: int, body: bytes) -> ErrorDeFreeMind:
@@ -124,7 +141,7 @@ class OrionOne:
             time.sleep(cada)
         self._ready = True
 
-    def responder(self, mensajes, *, modelo: str, pensamiento: bool, presupuesto: int | None = None, estilo=None,
+    def responder(self, mensajes, *, modelo: str, pensamiento=None, presupuesto: int | None = None, estilo=None,
                   contrato: dict | None = None, semilla: int | None = None, tope: int | None = None,
                   sesion: str | None = None, en_vivo: bool = False):
         """Pide una respuesta.
@@ -132,11 +149,14 @@ class OrionOne:
         mensajes: un texto (un turno del usuario) o la lista de turnos
         [{"role": "user" | "assistant", "content": "..."}].
         modelo: el código de la familia, por ejemplo "O.1-T".
-        pensamiento: si el modelo piensa antes de responder. Obligatorio: la
-        API no elige por ti.
-        presupuesto: con pensamiento=True, obligatorio: a lo sumo cuántos
-        tokens piensa; después el servidor cierra el pensamiento y fuerza la
-        respuesta. Tiene que ser menor que el tope. No hay valor por defecto.
+        pensamiento: cuánto piensa el modelo antes de responder, un nivel de
+        OrionOne Think: "apagado", "bajo", "medio" o "alto" (False es
+        "apagado"). "ultra" y "automatico" existen en el diseño y el servidor
+        los rechaza: no están disponibles aún. Obligatorio, salvo que se pase
+        presupuesto: la API no elige por ti.
+        presupuesto: en vez de un nivel, un techo exacto de tokens pensando;
+        al llegar, el servidor cierra el pensamiento y fuerza la respuesta.
+        tope es el máximo de la respuesta; el pensamiento va aparte.
         estilo: un perfil de OrionOne Style (dict) o el nombre de uno guardado.
         contrato: un JSON Schema que la respuesta cumple por construcción.
 
@@ -146,15 +166,8 @@ class OrionOne:
         """
         if isinstance(mensajes, str):
             mensajes = [{"role": "user", "content": mensajes}]
-        if not isinstance(pensamiento, bool):
-            raise ValueError("pensamiento tiene que ser True o False")
-        if pensamiento and presupuesto is None:
-            raise ValueError("con pensamiento=True el presupuesto es obligatorio: responder(..., pensamiento=True, "
-                             "presupuesto=N)")
-        if not pensamiento and presupuesto is not None:
-            raise ValueError("el presupuesto solo vale con pensamiento=True")
         body = {"modelo": modelo, "mensajes": list(mensajes),
-                "pensamiento": {"presupuesto": presupuesto} if pensamiento else False}
+                "pensamiento": _pensamiento(pensamiento, presupuesto)}
         for name, value in (("estilo", estilo), ("contrato", contrato), ("semilla", semilla),
                             ("tope", tope), ("sesion", sesion)):
             if value is not None:

@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freemindrl"
+version = "0.1.0"
+description = "SDK de FreeMind Research Lab: el cliente de OrionOne API."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "FreeMind Research Lab" }]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/FreeMind-Research-Lab/freemindrl"
+
+[tool.setuptools.packages.find]
+where = ["src"]

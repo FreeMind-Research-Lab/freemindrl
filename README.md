@@ -4,8 +4,14 @@ El SDK de FreeMind Research Lab. Hoy trae el cliente de **OrionOne API**, la
 entrada a OrionOne, la familia de modelos de FreeMind. Origin y Juno entrarán
 al mismo paquete.
 
-**Versión 0.1.0, mínima y sin publicar.** Envuelve la versión 0 de OrionOne
-API. El paquete `freemindrl` 0.0.1 que hay en PyPI solo reserva el nombre.
+**Versión 0.1.0, mínima.** Envuelve la versión 0 de OrionOne API. No se
+publica en PyPI hasta que exista el servidor definitivo de OrionOne; el
+`freemindrl` 0.0.1 que hay ahí solo reserva el nombre. Mientras tanto se
+instala desde GitHub:
+
+```bash
+pip install git+https://github.com/FreeMind-Research-Lab/freemindrl
+```
 
 Solo biblioteca estándar de Python, 3.10 o más reciente.
 

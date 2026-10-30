@@ -124,9 +124,9 @@ class OrionOne:
             time.sleep(cada)
         self._ready = True
 
-    def responder(self, mensajes, *, modelo: str, pensamiento: bool, estilo=None, contrato: dict | None = None,
-                  semilla: int | None = None, tope: int | None = None, sesion: str | None = None,
-                  en_vivo: bool = False):
+    def responder(self, mensajes, *, modelo: str, pensamiento: bool, presupuesto: int | None = None, estilo=None,
+                  contrato: dict | None = None, semilla: int | None = None, tope: int | None = None,
+                  sesion: str | None = None, en_vivo: bool = False):
         """Pide una respuesta.
 
         mensajes: un texto (un turno del usuario) o la lista de turnos
@@ -134,6 +134,9 @@ class OrionOne:
         modelo: el código de la familia, por ejemplo "O.1-T".
         pensamiento: si el modelo piensa antes de responder. Obligatorio: la
         API no elige por ti.
+        presupuesto: con pensamiento=True, obligatorio: a lo sumo cuántos
+        tokens piensa; después el servidor cierra el pensamiento y fuerza la
+        respuesta. Tiene que ser menor que el tope. No hay valor por defecto.
         estilo: un perfil de OrionOne Style (dict) o el nombre de uno guardado.
         contrato: un JSON Schema que la respuesta cumple por construcción.
 
@@ -145,7 +148,13 @@ class OrionOne:
             mensajes = [{"role": "user", "content": mensajes}]
         if not isinstance(pensamiento, bool):
             raise ValueError("pensamiento tiene que ser True o False")
-        body = {"modelo": modelo, "mensajes": list(mensajes), "pensamiento": pensamiento}
+        if pensamiento and presupuesto is None:
+            raise ValueError("con pensamiento=True el presupuesto es obligatorio: responder(..., pensamiento=True, "
+                             "presupuesto=N)")
+        if not pensamiento and presupuesto is not None:
+            raise ValueError("el presupuesto solo vale con pensamiento=True")
+        body = {"modelo": modelo, "mensajes": list(mensajes),
+                "pensamiento": {"presupuesto": presupuesto} if pensamiento else False}
         for name, value in (("estilo", estilo), ("contrato", contrato), ("semilla", semilla),
                             ("tope", tope), ("sesion", sesion)):
             if value is not None:

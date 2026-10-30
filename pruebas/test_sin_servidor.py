@@ -64,6 +64,10 @@ class SinServidor(unittest.TestCase):
             cliente.responder("Hola", modelo="O.1-T")
         with self.assertRaises(ValueError):
             cliente.responder("Hola", modelo="O.1-T", pensamiento="no")
+        with self.assertRaises(ValueError):
+            cliente.responder("Hola", modelo="O.1-T", pensamiento=True)
+        with self.assertRaises(ValueError):
+            cliente.responder("Hola", modelo="O.1-T", pensamiento=False, presupuesto=8)
 
 
 if __name__ == "__main__":

@@ -61,6 +61,14 @@ class ContraLaAPI(unittest.TestCase):
         r = cliente.responder(PREGUNTA, modelo="O.1-T", pensamiento=False, tope=16)
         self.assertTrue(r.texto)
 
+    def test_pensamiento_con_presupuesto(self):
+        events = list(self.cliente.responder(PREGUNTA, modelo="O.1-T", pensamiento=True, presupuesto=16, tope=96,
+                                             en_vivo=True))
+        kinds = [e.tipo for e in events]
+        self.assertIn("pensando", kinds)
+        self.assertEqual(kinds[-1], "fin")
+        self.assertTrue("".join(e.texto for e in events if e.tipo == "texto").strip(), "sin respuesta tras pensar")
+
     def test_llave_invalida(self):
         with self.assertRaises(LlaveInvalida) as caught:
             OrionOne(llave="oo_no-es-una-llave", url=URL).responder(PREGUNTA, modelo="O.1-T", pensamiento=False)

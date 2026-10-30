@@ -65,6 +65,7 @@ espera a que lo esté. Si no lo está a tiempo, `Desconexion`.
 | `mensajes` | Un texto (un turno del usuario) o la lista de turnos `{"role", "content"}` |
 | `modelo` | El código de la familia. Hoy la API sirve `O.1-T` |
 | `pensamiento` | Obligatorio, `True` o `False`: el SDK no elige por ti |
+| `presupuesto` | Con `pensamiento=True`, obligatorio: a lo sumo cuántos tokens piensa el modelo; luego se cierra el pensamiento y se fuerza la respuesta. Menor que el tope, sin valor por defecto |
 | `estilo` | Un perfil de OrionOne Style, o el nombre de uno guardado |
 | `contrato` | Un JSON Schema: la respuesta lo cumple por construcción |
 | `semilla`, `tope`, `sesion` | Semilla del muestreo, máximo de tokens y conversación |

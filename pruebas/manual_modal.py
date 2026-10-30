@@ -5,7 +5,8 @@ quien la corre, en variables de entorno.
     ORIONONE_URL=<dirección del despliegue> ORIONONE_LLAVE=<llave> python pruebas/manual_modal.py
 
 La primera respuesta puede tardar: el contenedor se apaga sin uso y arranca
-con el primer pedido.
+con el primer pedido. Con esperar, el cliente consulta GET /salud hasta que
+el modelo está cargado.
 """
 
 from __future__ import annotations
@@ -22,8 +23,11 @@ def main() -> int:
     if not (url and key):
         print("Faltan ORIONONE_URL y ORIONONE_LLAVE.")
         return 2
-    cliente = OrionOne(llave=key, url=url)
+    cliente = OrionOne(llave=key, url=url, esperar=600)
     try:
+        start = time.monotonic()
+        cliente.esperar_listo(600)
+        print(f"listo ({time.monotonic() - start:.1f} s)")
         start = time.monotonic()
         r = cliente.responder("¿Cuál es la capital de Colombia?", modelo="O.1-T", pensamiento=False)
         print(f"completa ({time.monotonic() - start:.1f} s): {r.texto!r}")
